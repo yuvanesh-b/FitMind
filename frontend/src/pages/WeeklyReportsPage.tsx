@@ -76,9 +76,13 @@ export const WeeklyReportsPage: React.FC = () => {
 
       if (response.data.type === 'application/json') {
         const text = await response.data.text();
-        const jsonErr = JSON.parse(text);
-        console.error('PDF generation error from backend:', jsonErr);
-        setError('Unable to generate the PDF right now. Please try again.');
+        let errMsg = 'Unable to generate the PDF right now. Please try again.';
+        try {
+          const jsonErr = JSON.parse(text);
+          if (jsonErr?.message) errMsg = jsonErr.message;
+        } catch (_) {}
+        console.error('PDF generation error from backend:', text);
+        setError(errMsg);
         return;
       }
 
@@ -92,9 +96,19 @@ export const WeeklyReportsPage: React.FC = () => {
       link.click();
       link.remove();
       setTimeout(() => window.URL.revokeObjectURL(url), 1000);
-    } catch (e) {
+    } catch (e: any) {
       console.error('Failed to download PDF:', e);
-      setError('Unable to generate the PDF right now. Please try again.');
+      let errMsg = 'Unable to generate the PDF right now. Please try again.';
+      if (e?.response?.data instanceof Blob && e.response.data.type === 'application/json') {
+        try {
+          const text = await e.response.data.text();
+          const jsonErr = JSON.parse(text);
+          if (jsonErr?.message) errMsg = jsonErr.message;
+        } catch (_) {}
+      } else if (e?.response?.data?.message) {
+        errMsg = e.response.data.message;
+      }
+      setError(errMsg);
     } finally {
       setDownloadingId(null);
     }

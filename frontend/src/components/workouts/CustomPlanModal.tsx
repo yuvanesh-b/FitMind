@@ -95,7 +95,7 @@ export const CustomPlanModal: React.FC<CustomPlanModalProps> = ({
         </button>
 
         <div>
-          <span className="text-[10px] font-extrabold uppercase tracking-wider text-brand-400">Custom Plan Builder</span>
+          <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#865BC4]">Custom Plan Builder</span>
           <h3 className="text-xl font-extrabold text-[var(--text-primary)]">Create Custom Workout Plan</h3>
         </div>
 
@@ -177,7 +177,7 @@ export const CustomPlanModal: React.FC<CustomPlanModalProps> = ({
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3.5 rounded-xl font-extrabold bg-brand-600 hover:bg-brand-500 text-white text-xs shadow-lg shadow-brand-600/30 transition-all flex items-center justify-center disabled:opacity-50 mt-2"
+            className="w-full py-3.5 rounded-xl font-extrabold bg-[#865BC4] hover:bg-[#7347B0] text-white text-xs shadow-lg shadow-[#865BC4]/30 transition-all flex items-center justify-center disabled:opacity-50 mt-2"
           >
             {loading ? (
               <div className="flex items-center gap-2">

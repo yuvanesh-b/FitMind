@@ -117,7 +117,7 @@ export const Adaptive6DayRecommendationCard: React.FC = () => {
             <h3 className="text-lg font-black text-[var(--text-primary)] tracking-tight">Your Next 6 Days (Adaptive Plan)</h3>
           </div>
           <p className="text-xs text-[var(--text-secondary)]">
-            Dynamically adapted from your previous 6 days of MySQL workout history ({analysis.totalSessionsCount} session(s) logged, {analysis.activeDaysCount} active days, {analysis.skippedExercisesCount} skipped items).
+            Personalized from your last 6 days of workout history — {analysis.totalSessionsCount} session{analysis.totalSessionsCount === 1 ? '' : 's'} logged, {analysis.activeDaysCount} active day{analysis.activeDaysCount === 1 ? '' : 's'}, {analysis.skippedExercisesCount} skipped item{analysis.skippedExercisesCount === 1 ? '' : 's'}.
           </p>
         </div>
 

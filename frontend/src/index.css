@@ -28,14 +28,14 @@ html.light {
   --bg-input: #FFFFFF;
   --border-subtle: #DED3E5;
   --border-focus: #865BC4;
-  --text-primary: #241D2D;
-  --text-secondary: #5F5368;
-  --text-muted: #7F718B;
+  --text-primary: #1F1B2D;
+  --text-secondary: #5F5870;
+  --text-muted: #777080;
   --brand-primary: #865BC4;
   --brand-hover: #7347B0;
   --brand-glow: rgba(134, 91, 196, 0.12);
   --btn-secondary-bg: #F3EDF7;
-  --btn-secondary-text: #5F5368;
+  --btn-secondary-text: #5F5870;
   --card-shadow: 0 2px 12px rgba(134, 91, 196, 0.06);
 }
 

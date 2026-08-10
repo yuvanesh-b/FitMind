@@ -62,12 +62,12 @@ export const GenerateAiWorkoutModal: React.FC<GenerateAiWorkoutModalProps> = ({
         </button>
 
         <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-brand-600/20 text-brand-400 border border-brand-500/30">
+          <div className="p-2.5 rounded-xl bg-[#865BC4]/15 text-[#865BC4] border border-[#865BC4]/30">
             <Dumbbell className="w-6 h-6 text-[#865BC4]" />
           </div>
           <div>
             <div className="flex items-center gap-1.5">
-              <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#7347B0] dark:text-brand-400">Intelligent Workout Coach</span>
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#865BC4]">Intelligent Workout Coach</span>
             </div>
             <h3 className="text-xl font-extrabold text-[var(--text-primary)]">Generate Workout Plan</h3>
           </div>
@@ -96,7 +96,7 @@ export const GenerateAiWorkoutModal: React.FC<GenerateAiWorkoutModalProps> = ({
                   onClick={() => setGoal(item.id)}
                   className={`p-2.5 rounded-xl text-xs font-bold text-left border transition-all ${
                     goal === item.id
-                      ? 'bg-brand-600/20 border-brand-500 text-[var(--text-primary)]'
+                      ? 'bg-[#865BC4]/15 border-[#865BC4] text-[#865BC4]'
                       : 'bg-[var(--bg-surface)] border-[var(--border-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
                   }`}
                 >
@@ -172,7 +172,7 @@ export const GenerateAiWorkoutModal: React.FC<GenerateAiWorkoutModalProps> = ({
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3.5 rounded-xl font-extrabold bg-brand-600 hover:bg-brand-500 text-white text-xs shadow-lg shadow-brand-600/30 transition-all flex items-center justify-center gap-2 disabled:opacity-50 mt-2"
+            className="w-full py-3.5 rounded-xl font-extrabold bg-[#865BC4] hover:bg-[#7347B0] text-white text-xs shadow-lg shadow-[#865BC4]/30 transition-all flex items-center justify-center gap-2 disabled:opacity-50 mt-2"
           >
             {loading ? (
               <>

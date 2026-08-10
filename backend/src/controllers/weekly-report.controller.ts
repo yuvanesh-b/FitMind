@@ -45,11 +45,30 @@ export class WeeklyReportController {
       const pdfPath = await WeeklyReportService.ensurePdfGenerated(req.user!.userId, req.params.id);
       const report = await WeeklyReportService.getReportById(req.user!.userId, req.params.id);
 
-      res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader('Content-Disposition', `attachment; filename=FitMind_Weekly_Report_${report.periodLabel.replace(/\s+/g, '_')}.pdf`);
+      if (!fs.existsSync(pdfPath)) {
+        throw new Error('PDF file not found at generated path');
+      }
 
-      const fileStream = fs.createReadStream(pdfPath);
-      fileStream.pipe(res);
+      const pdfBuffer = fs.readFileSync(pdfPath);
+      if (!pdfBuffer || pdfBuffer.length === 0) {
+        throw new Error('PDF buffer is empty or corrupted');
+      }
+
+      const dateStr = report.periodStart
+        ? new Date(report.periodStart).toISOString().split('T')[0]
+        : new Date().toISOString().split('T')[0];
+
+      const rawFilename = `weekly-fitness-report-${dateStr}.pdf`;
+      const safeFilename = rawFilename
+        .normalize('NFKD')
+        .replace(/[^\x20-\x7E]/g, '')
+        .replace(/["\\\r\n/]/g, '-')
+        .replace(/\s+/g, '-');
+
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="${safeFilename}"`);
+
+      return res.send(pdfBuffer);
     } catch (error) {
       console.error('Error generating/downloading PDF report:', error);
       next(error);

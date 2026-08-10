@@ -267,16 +267,45 @@ Generate JSON output:
 `;
 
       const systemPrompt = 'You are FitMind AI, an elite personal trainer and nutritionist. Analyze the previous 6 days performance and plan the next 6 days. Respond ONLY with a single valid JSON object containing whatWentWell, needsImprovement, aiInsight, nextWeekPlan, and nextWeekGoals.';
-      const aiResponse = await GroqProvider.generateResponse(systemPrompt, promptContext, 'Generate weekly report JSON.');
+      const aiResponse = await GroqProvider.generateResponse(systemPrompt, promptContext, userId, 'Generate weekly report JSON.', { jsonMode: true });
 
-      const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
+      // Clean markdown code blocks and sanitize trailing commas before parsing
+      let cleaned = (aiResponse || '')
+        .replace(/```json\s*/gi, '')
+        .replace(/```\s*/g, '')
+        .trim();
+
+      const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
+      let parsed: any = null;
+
       if (jsonMatch) {
-        const parsed = JSON.parse(jsonMatch[0]);
-        if (parsed.whatWentWell) aiAnalysis.whatWentWell = parsed.whatWentWell;
-        if (parsed.needsImprovement) aiAnalysis.needsImprovement = parsed.needsImprovement;
-        if (parsed.aiInsight) aiInsight = parsed.aiInsight;
-        if (parsed.nextWeekPlan && Array.isArray(parsed.nextWeekPlan)) nextWeekPlan = parsed.nextWeekPlan;
-        if (parsed.nextWeekGoals && Array.isArray(parsed.nextWeekGoals)) nextWeekGoals = parsed.nextWeekGoals;
+        let jsonStr = jsonMatch[0].replace(/,\s*([\}\]])/g, '$1');
+        try {
+          parsed = JSON.parse(jsonStr);
+        } catch (e) {
+          console.warn('[WEEKLY REPORT] Failed parsing AI response JSON:', e);
+        }
+      }
+
+      if (parsed) {
+        if (Array.isArray(parsed.whatWentWell) && parsed.whatWentWell.length > 0) {
+          aiAnalysis.whatWentWell = parsed.whatWentWell;
+        }
+        if (Array.isArray(parsed.needsImprovement) && parsed.needsImprovement.length > 0) {
+          aiAnalysis.needsImprovement = parsed.needsImprovement;
+        }
+        if (typeof parsed.aiInsight === 'string' && parsed.aiInsight.trim().length > 0) {
+          aiInsight = parsed.aiInsight.trim();
+        }
+        if (Array.isArray(parsed.nextWeekPlan) && parsed.nextWeekPlan.length > 0) {
+          nextWeekPlan = parsed.nextWeekPlan;
+        }
+        if (Array.isArray(parsed.nextWeekGoals) && parsed.nextWeekGoals.length > 0) {
+          nextWeekGoals = parsed.nextWeekGoals;
+        }
+        console.log(`[WEEKLY REPORT] Successfully parsed structured AI weekly analysis for User ID: ${userId}`);
+      } else {
+        console.warn('[WEEKLY REPORT] Using safe structured fallback for AI weekly report analysis.');
       }
     } catch (err) {
       console.warn('Groq AI weekly report reasoning fallback activated:', err);

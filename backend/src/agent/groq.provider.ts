@@ -12,8 +12,14 @@ export class GroqProvider {
     return text.replace(/```json\s*[\s\S]*?\s*```/gi, '').trim();
   }
 
-  static async generateResponse(systemPrompt: string, userPrompt: string, context?: string): Promise<string> {
-    const res = await this.runAgenticLoop(systemPrompt, [], userPrompt, 'system', 'WEEKLY_REPORT');
+  static async generateResponse(
+    systemPrompt: string,
+    userPrompt: string,
+    userId: string = 'system',
+    context?: string,
+    options?: { jsonMode?: boolean }
+  ): Promise<string> {
+    const res = await this.runAgenticLoop(systemPrompt, [], userPrompt, userId, 'WEEKLY_REPORT', options);
     return res.replyText;
   }
 
@@ -22,7 +28,8 @@ export class GroqProvider {
     historyMessages: Array<{ role: 'user' | 'assistant'; content: string }>,
     userMessage: string,
     userId: string,
-    intent?: string
+    intent?: string,
+    options?: { jsonMode?: boolean }
   ): Promise<AgentResponse> {
     const currentIntent: AgentIntent = (intent as AgentIntent) || 'GENERAL_FITNESS';
 
@@ -52,14 +59,20 @@ export class GroqProvider {
 
     try {
       console.log(`[GROQ] Dispatching prompt to Groq API...`);
-      let completion = await this.groqClient.chat.completions.create({
+      const requestPayload: any = {
         model,
         messages,
         tools: availableTools.length > 0 ? (availableTools as any) : undefined,
         tool_choice: availableTools.length > 0 ? 'auto' : undefined,
         temperature: 0.4,
-        max_tokens: 1024,
-      });
+        max_tokens: 2048,
+      };
+
+      if (options?.jsonMode || (currentIntent === 'WEEKLY_REPORT' && availableTools.length === 0)) {
+        requestPayload.response_format = { type: 'json_object' };
+      }
+
+      let completion = await this.groqClient.chat.completions.create(requestPayload);
 
       let responseMessage = completion.choices[0]?.message;
 

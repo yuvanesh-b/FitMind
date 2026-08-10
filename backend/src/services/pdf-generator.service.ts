@@ -65,7 +65,7 @@ export class PdfGeneratorService {
 
     return new Promise((resolve, reject) => {
       try {
-        const doc = new PDFDocument({ margin: 40, size: 'A4' });
+        const doc = new PDFDocument({ margin: 40, size: 'A4', bufferPages: true });
         const writeStream = fs.createWriteStream(filePath);
 
         doc.pipe(writeStream);

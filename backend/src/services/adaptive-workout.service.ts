@@ -349,6 +349,19 @@ export class AdaptiveWorkoutService {
       days,
     };
 
+    // Verify user exists in User table before attempting database insertion
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true },
+    });
+
+    if (!user) {
+      console.warn(
+        `[ADAPTIVE AGENT WARNING] User ID "${userId}" does not exist in User table (system/guest execution context). Returning generated plan without saving AiRecommendation record.`
+      );
+      return result;
+    }
+
     // Save to AiRecommendation in database
     const recommendation = await prisma.aiRecommendation.create({
       data: {
