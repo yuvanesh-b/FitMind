@@ -1,0 +1,516 @@
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+  PREFER_NOT_TO_SAY
+}
+
+enum FitnessLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum GoalCategory {
+  WEIGHT_LOSS
+  MUSCLE_GAIN
+  STRENGTH
+  ENDURANCE
+  GENERAL_FITNESS
+}
+
+enum EquipmentType {
+  BODYWEIGHT
+  DUMBBELL
+  BARBELL
+  CABLE
+  MACHINE
+  RESISTANCE_BAND
+  KETTLEBELL
+  FULL_GYM
+}
+
+enum MuscleGroup {
+  CHEST
+  BACK
+  SHOULDERS
+  BICEPS
+  TRICEPS
+  QUADS
+  HAMSTRINGS
+  GLUTES
+  CORE
+  CARDIO
+  FULL_BODY
+}
+
+enum SessionStatus {
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum AiRole {
+  USER
+  ASSISTANT
+  SYSTEM
+}
+
+model User {
+  id                 String              @id @default(uuid())
+  email              String              @unique
+  name               String
+  passwordHash       String              @map("password_hash")
+  refreshTokenHash   String?             @map("refresh_token_hash")
+  createdAt          DateTime            @default(now()) @map("created_at")
+  updatedAt          DateTime            @updatedAt @map("updated_at")
+
+  profile            UserProfile?
+  goals              FitnessGoal[]
+  workoutPlans       WorkoutPlan[]
+  workoutSessions    WorkoutSession[]
+  bodyMeasurements   BodyMeasurement[]
+  nutritionLogs      NutritionLog[]
+  aiConversations    AiConversation[]
+  aiRecommendations  AiRecommendation[]
+  progressRecords    ProgressRecord[]
+  dailyActivities    DailyActivity[]
+  waterLogs          WaterLog[]
+  weeklyReports      WeeklyReport[]
+
+  @@map("users")
+}
+
+model UserProfile {
+  id                   String        @id @default(uuid())
+  userId               String        @unique @map("user_id")
+  age                  Int
+  gender               Gender        @default(PREFER_NOT_TO_SAY)
+  heightCm             Float         @map("height_cm")
+  weightKg             Float         @map("weight_kg")
+  targetWeightKg       Float?        @map("target_weight_kg")
+  fitnessLevel         FitnessLevel  @default(BEGINNER) @map("fitness_level")
+  workoutFrequencyDays Int           @default(4) @map("workout_frequency_days")
+  preferredDurationMin Int           @default(45) @map("preferred_duration_min")
+  availableEquipment   EquipmentType @default(FULL_GYM) @map("available_equipment")
+  preferredTime        String?       @map("preferred_time")
+  createdAt            DateTime      @default(now()) @map("created_at")
+  updatedAt            DateTime      @updatedAt @map("updated_at")
+
+  user                 User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_profiles")
+}
+
+model FitnessGoal {
+  id          String       @id @default(uuid())
+  userId      String       @map("user_id")
+  category    GoalCategory
+  title       String
+  targetValue Float?       @map("target_value")
+  unit        String?
+  targetDate  DateTime?    @map("target_date")
+  isCompleted Boolean      @default(false) @map("is_completed")
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("fitness_goals")
+}
+
+model Exercise {
+  id                   String        @id @default(uuid())
+  name                 String        @unique
+  slug                 String        @unique
+  muscleGroup          MuscleGroup   @map("muscle_group")
+  category             String        @default("Strength")
+  equipment            EquipmentType
+  difficulty           FitnessLevel  @default(BEGINNER)
+  description          String        @db.Text
+  instructions         String        @db.Text
+  primaryMuscle        String        @default("Target Muscle") @map("primary_muscle")
+  secondaryMuscles     String?       @db.Text @map("secondary_muscles")
+  setsRecommendation   Int           @default(3) @map("sets_recommendation")
+  repsRecommendation   String        @default("8-12") @map("reps_recommendation")
+  restSeconds          Int           @default(60) @map("rest_seconds")
+  caloriesBurnEstimate Int           @default(50) @map("calories_burn_estimate")
+  isActive             Boolean       @default(true) @map("is_active")
+  createdAt            DateTime      @default(now()) @map("created_at")
+  updatedAt            DateTime      @updatedAt @map("updated_at")
+
+  planExercises        WorkoutPlanExercise[]
+  sessionExercises     WorkoutSessionExercise[]
+
+  @@index([muscleGroup])
+  @@index([category])
+  @@index([difficulty])
+  @@index([name])
+  @@index([isActive])
+  @@map("exercises")
+}
+
+model WorkoutPlan {
+  id            String           @id @default(uuid())
+  userId        String           @map("user_id")
+  name          String
+  description   String?          @db.Text
+  isAiGenerated Boolean          @default(false) @map("is_ai_generated")
+  isCustom      Boolean          @default(true) @map("is_custom")
+  createdAt     DateTime         @default(now()) @map("created_at")
+  updatedAt     DateTime         @updatedAt @map("updated_at")
+
+  user          User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  days          WorkoutPlanDay[]
+  sessions      WorkoutSession[]
+
+  @@map("workout_plans")
+}
+
+model WorkoutPlanDay {
+  id            String                @id @default(uuid())
+  planId        String                @map("plan_id")
+  dayName       String                @map("day_name")
+  dayOrder      Int                   @map("day_order")
+  targetMuscles String?               @map("target_muscles")
+
+  plan          WorkoutPlan           @relation(fields: [planId], references: [id], onDelete: Cascade)
+  exercises     WorkoutPlanExercise[]
+
+  @@map("workout_plan_days")
+}
+
+model WorkoutPlanExercise {
+  id          String         @id @default(uuid())
+  dayId       String         @map("day_id")
+  exerciseId  String         @map("exercise_id")
+  order       Int
+  targetSets  Int            @default(3) @map("target_sets")
+  targetReps  Int            @default(10) @map("target_reps")
+  restSeconds Int            @default(60) @map("rest_seconds")
+
+  day         WorkoutPlanDay @relation(fields: [dayId], references: [id], onDelete: Cascade)
+  exercise    Exercise       @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+
+  @@map("workout_plan_exercises")
+}
+
+model WorkoutSession {
+  id              String                   @id @default(uuid())
+  userId          String                   @map("user_id")
+  planId          String?                  @map("plan_id")
+  title           String
+  status          SessionStatus            @default(IN_PROGRESS)
+  startedAt       DateTime                 @default(now()) @map("started_at")
+  completedAt     DateTime?                @map("completed_at")
+  durationSeconds Int                      @default(0) @map("duration_seconds")
+  totalVolumeKg   Float                    @default(0) @map("total_volume_kg")
+  totalSets       Int                      @default(0) @map("total_sets")
+  totalReps       Int                      @default(0) @map("total_reps")
+  caloriesBurned  Int                      @default(0) @map("calories_burned")
+  notes           String?                  @db.Text
+  createdAt       DateTime                 @default(now()) @map("created_at")
+  updatedAt       DateTime                 @updatedAt @map("updated_at")
+
+  user            User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan            WorkoutPlan?             @relation(fields: [planId], references: [id], onDelete: SetNull)
+  exercises       WorkoutSessionExercise[]
+
+  @@map("workout_sessions")
+}
+
+model WorkoutSessionExercise {
+  id         String         @id @default(uuid())
+  sessionId  String         @map("session_id")
+  exerciseId String         @map("exercise_id")
+  order      Int
+
+  session    WorkoutSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  exercise   Exercise       @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+  sets       WorkoutSet[]
+
+  @@map("workout_session_exercises")
+}
+
+model WorkoutSet {
+  id                String                 @id @default(uuid())
+  sessionExerciseId String                 @map("session_exercise_id")
+  setNumber         Int                    @map("set_number")
+  weightKg          Float                  @default(0) @map("weight_kg")
+  reps              Int                    @default(0)
+  isCompleted       Boolean                @default(true) @map("is_completed")
+  previousWeightKg  Float?                 @map("previous_weight_kg")
+  previousReps      Int?                   @map("previous_reps")
+
+  sessionExercise   WorkoutSessionExercise @relation(fields: [sessionExerciseId], references: [id], onDelete: Cascade)
+
+  @@map("workout_sets")
+}
+
+model BodyMeasurement {
+  id                String   @id @default(uuid())
+  userId            String   @map("user_id")
+  weightKg          Float    @map("weight_kg")
+  chestCm           Float?   @map("chest_cm")
+  waistCm           Float?   @map("waist_cm")
+  armsCm            Float?   @map("arms_cm")
+  thighsCm          Float?   @map("thighs_cm")
+  bodyFatPercentage Float?   @map("body_fat_percentage")
+  recordedAt        DateTime @default(now()) @map("recorded_at")
+
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("body_measurements")
+}
+
+model Nutrient {
+  id              String         @id @default(uuid())
+  name            String         @unique
+  unit            String         @default("mg")
+  category        String         @default("Micronutrient")
+  referenceTarget Float          @default(0) @map("reference_target")
+  createdAt       DateTime       @default(now()) @map("created_at")
+
+  foodNutrients   FoodNutrient[]
+
+  @@index([name])
+  @@map("nutrients")
+}
+
+model FoodNutrient {
+  id         String   @id @default(uuid())
+  foodId     String   @map("food_id")
+  nutrientId String   @map("nutrient_id")
+  amount     Float    @default(0)
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  food       Food     @relation(fields: [foodId], references: [id], onDelete: Cascade)
+  nutrient   Nutrient @relation(fields: [nutrientId], references: [id], onDelete: Cascade)
+
+  @@unique([foodId, nutrientId])
+  @@index([foodId])
+  @@index([nutrientId])
+  @@map("food_nutrients")
+}
+
+model FoodIngredient {
+  id        String   @id @default(uuid())
+  foodId    String   @map("food_id")
+  name      String
+  amount    Float?
+  unit      String?
+  sortOrder Int      @default(0) @map("sort_order")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  food      Food     @relation(fields: [foodId], references: [id], onDelete: Cascade)
+
+  @@index([foodId])
+  @@map("food_ingredients")
+}
+
+model FoodBenefit {
+  id        String   @id @default(uuid())
+  foodId    String   @map("food_id")
+  benefit   String
+  sortOrder Int      @default(0) @map("sort_order")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  food      Food     @relation(fields: [foodId], references: [id], onDelete: Cascade)
+
+  @@index([foodId])
+  @@map("food_benefits")
+}
+
+model Food {
+  id            String             @id @default(uuid())
+  name          String             @unique
+  category      String             @default("General")
+  servingSize   Float              @default(100) @map("serving_size")
+  servingUnit   String             @default("g") @map("serving_unit")
+  calories      Int                @default(0)
+  protein       Float              @default(0)
+  carbohydrates Float              @default(0)
+  fat           Float              @default(0)
+  fiber         Float              @default(0)
+  sugar         Float              @default(0)
+  saturatedFat  Float              @default(0) @map("saturated_fat")
+  sodium        Float              @default(0)
+  createdAt     DateTime           @default(now()) @map("created_at")
+  updatedAt     DateTime           @updatedAt @map("updated_at")
+
+  logItems      NutritionLogItem[]
+  foodNutrients FoodNutrient[]
+  ingredients   FoodIngredient[]
+  benefits      FoodBenefit[]
+
+  @@index([name])
+  @@index([category])
+  @@map("foods")
+}
+
+model NutritionLog {
+  id                 String             @id @default(uuid())
+  userId             String             @map("user_id")
+  mealType           String             @map("meal_type")
+  mealTime           String?            @map("meal_time")
+  foodName           String             @map("food_name")
+  quantity           String             @default("1 serving")
+  calories           Int                @default(0)
+  proteinG           Float              @default(0) @map("protein_g")
+  carbsG             Float              @default(0) @map("carbs_g")
+  fatG               Float              @default(0) @map("fat_g")
+  fiberG             Float              @default(0) @map("fiber_g")
+  sugarG             Float              @default(0) @map("sugar_g")
+  saturatedFatG      Float              @default(0) @map("saturated_fat_g")
+  sodiumMg           Float              @default(0) @map("sodium_mg")
+  micronutrientsJson String?            @db.Text @map("micronutrients_json")
+  loggedAt           DateTime           @default(now()) @map("logged_at")
+  createdAt          DateTime           @default(now()) @map("created_at")
+  updatedAt          DateTime           @updatedAt @map("updated_at")
+
+  user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items              NutritionLogItem[]
+
+  @@index([userId])
+  @@index([loggedAt])
+  @@index([mealType])
+  @@map("nutrition_logs")
+}
+
+model NutritionLogItem {
+  id             String       @id @default(uuid())
+  nutritionLogId String       @map("nutrition_log_id")
+  foodId         String?      @map("food_id")
+  foodName       String       @map("food_name")
+  quantity       Float        @default(1)
+  unit           String       @default("serving")
+  calories       Int          @default(0)
+  protein        Float        @default(0)
+  carbs          Float        @default(0)
+  fat            Float        @default(0)
+  createdAt      DateTime     @default(now()) @map("created_at")
+
+  nutritionLog   NutritionLog @relation(fields: [nutritionLogId], references: [id], onDelete: Cascade)
+  food           Food?        @relation(fields: [foodId], references: [id], onDelete: SetNull)
+
+  @@index([nutritionLogId])
+  @@index([foodId])
+  @@map("nutrition_log_items")
+}
+
+model WaterLog {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  amountMl  Int      @map("amount_ml")
+  loggedAt  DateTime @default(now()) @map("logged_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([loggedAt])
+  @@map("water_logs")
+}
+
+model AiConversation {
+  id        String      @id @default(uuid())
+  userId    String      @map("user_id")
+  title     String      @default("Coaching Session")
+  createdAt DateTime    @default(now()) @map("created_at")
+  updatedAt DateTime    @updatedAt @map("updated_at")
+
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages  AiMessage[]
+
+  @@map("ai_conversations")
+}
+
+model AiMessage {
+  id             String         @id @default(uuid())
+  conversationId String         @map("conversation_id")
+  role           AiRole
+  content        String         @db.Text
+  structuredData String?        @db.Text @map("structured_data")
+  createdAt      DateTime       @default(now()) @map("created_at")
+
+  conversation   AiConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@map("ai_messages")
+}
+
+model AiRecommendation {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  type        String
+  title       String
+  summary     String   @db.Text
+  contentJson String   @db.Text @map("content_json")
+  isDismissed Boolean  @default(false) @map("is_dismissed")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("ai_recommendations")
+}
+
+model ProgressRecord {
+  id                String   @id @default(uuid())
+  userId            String   @map("user_id")
+  date              DateTime @default(now())
+  weightKg          Float?   @map("weight_kg")
+  totalVolumeKg     Float    @default(0) @map("total_volume_kg")
+  completedWorkouts Int      @default(0) @map("completed_workouts")
+  streakDays        Int      @default(0) @map("streak_days")
+
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("progress_records")
+}
+
+model DailyActivity {
+  id             String   @id @default(uuid())
+  userId         String   @map("user_id")
+  date           DateTime @default(now())
+  workoutsDone   Int      @default(0) @map("workouts_done")
+  caloriesBurned Int      @default(0) @map("calories_burned")
+  activeMinutes  Int      @default(0) @map("active_minutes")
+
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("daily_activity")
+}
+
+model WeeklyReport {
+  id                   String   @id @default(uuid())
+  userId               String   @map("user_id")
+  periodStart          DateTime @map("period_start")
+  periodEnd            DateTime @map("period_end")
+
+  workoutSummaryJson   String   @db.Text @map("workout_summary_json")
+  nutritionSummaryJson String?  @db.Text @map("nutrition_summary_json")
+  progressSummaryJson  String?  @db.Text @map("progress_summary_json")
+  aiAnalysisJson       String   @db.Text @map("ai_analysis_json")
+  aiInsight            String   @db.Text @map("ai_insight")
+  nextWeekPlanJson     String   @db.Text @map("next_week_plan_json")
+  nextWeekGoalsJson    String   @db.Text @map("next_week_goals_json")
+
+  pdfPath              String?  @map("pdf_path")
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, periodStart, periodEnd])
+  @@index([userId])
+  @@index([periodStart])
+  @@map("weekly_reports")
+}

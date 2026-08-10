@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bg3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E1B4B"/>
+      <stop offset="50%" stop-color="#4C1D95"/>
+      <stop offset="100%" stop-color="#0F172A"/>
+    </linearGradient>
+    <linearGradient id="purpleGrad3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#C084FC"/>
+      <stop offset="100%" stop-color="#E879F9"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="800" height="450" fill="url(#bg3)"/>
+
+  <!-- Target & Coaching Graphic Representation -->
+  <circle cx="400" cy="200" r="120" fill="none" stroke="rgba(192, 132, 252, 0.2)" stroke-width="8"/>
+  <circle cx="400" cy="200" r="85" fill="none" stroke="url(#purpleGrad3)" stroke-width="4" stroke-dasharray="8 6"/>
+  <circle cx="400" cy="200" r="40" fill="none" stroke="#FFFFFF" stroke-width="3"/>
+  <circle cx="400" cy="200" r="14" fill="#C084FC"/>
+
+  <!-- Personalized Badge overlay -->
+  <rect x="250" y="290" width="300" height="60" rx="16" fill="rgba(15, 23, 42, 0.85)" stroke="rgba(192, 132, 252, 0.5)" stroke-width="2"/>
+  <text x="400" y="315" font-family="Inter, sans-serif" font-size="12" font-weight="700" fill="#E879F9" text-anchor="middle">1-ON-1 ADAPTIVE PLAN</text>
+  <text x="400" y="335" font-family="Inter, sans-serif" font-size="15" font-weight="900" fill="#FFFFFF" text-anchor="middle">TAILORED FOR YOUR GOALS</text>
+
+  <!-- Title Badge Overlay at bottom -->
+  <rect x="280" y="390" width="240" height="36" rx="18" fill="rgba(192, 132, 252, 0.2)" stroke="#C084FC" stroke-width="1.5"/>
+  <text x="400" y="413" font-family="Inter, sans-serif" font-size="12" font-weight="800" fill="#FFFFFF" text-anchor="middle" letter-spacing="1">PERSONALIZED COACHING</text>
+</svg>

@@ -1,0 +1,129 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root,
+html.dark {
+  --bg-main: #0F0D16;
+  --bg-surface: #15121F;
+  --bg-card: #1B1726;
+  --bg-input: #15121F;
+  --border-subtle: rgba(156, 139, 178, 0.30);
+  --border-focus: #865BC4;
+  --text-primary: #F8F2FA;
+  --text-secondary: #9C8BB2;
+  --text-muted: rgba(156, 139, 178, 0.70);
+  --brand-primary: #865BC4;
+  --brand-hover: #9868DC;
+  --brand-glow: rgba(134, 91, 196, 0.30);
+  --btn-secondary-bg: #1B1726;
+  --btn-secondary-text: #F8F2FA;
+  --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+}
+
+html.light {
+  --bg-main: #F8F2FA;
+  --bg-surface: #F3EDF7;
+  --bg-card: #FFFFFF;
+  --bg-input: #FFFFFF;
+  --border-subtle: #DED3E5;
+  --border-focus: #865BC4;
+  --text-primary: #241D2D;
+  --text-secondary: #5F5368;
+  --text-muted: #7F718B;
+  --brand-primary: #865BC4;
+  --brand-hover: #7347B0;
+  --brand-glow: rgba(134, 91, 196, 0.12);
+  --btn-secondary-bg: #F3EDF7;
+  --btn-secondary-text: #5F5368;
+  --card-shadow: 0 2px 12px rgba(134, 91, 196, 0.06);
+}
+
+@layer base {
+  body {
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    @apply font-sans antialiased min-h-screen transition-colors duration-200;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    color: var(--text-primary);
+  }
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-main);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--bg-card);
+  border-radius: 9999px;
+  border: 1px solid var(--border-subtle);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}
+
+/* Reusable FitMind Theme Utilities */
+.glass-card, .bg-card-surface {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  box-shadow: var(--card-shadow);
+  backdrop-filter: blur(16px);
+}
+
+.bg-page-surface {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+}
+
+.brand-glow {
+  box-shadow: 0 0 25px var(--brand-glow);
+}
+
+.violet-glow {
+  box-shadow: 0 0 25px var(--brand-glow);
+}
+
+/* Buttons & Inputs */
+.btn-primary-gradient {
+  background-color: var(--brand-primary);
+  color: #FFFFFF !important;
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-primary-gradient:hover {
+  background-color: var(--brand-hover);
+  box-shadow: 0 4px 20px var(--brand-glow);
+}
+
+.btn-secondary-surface {
+  background-color: var(--btn-secondary-bg);
+  border: 1px solid var(--border-subtle);
+  color: var(--btn-secondary-text);
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-secondary-surface:hover {
+  background-color: var(--bg-surface);
+  border-color: var(--brand-primary);
+}
+
+.input-navy {
+  background-color: var(--bg-input);
+  border-color: var(--border-subtle);
+  color: var(--text-primary);
+}
+
+.input-navy:focus {
+  border-color: var(--brand-primary);
+  box-shadow: 0 0 0 3px var(--brand-glow);
+}
